@@ -10,7 +10,6 @@ export default function Home() {
   const [account, setAccount] = useState(null);
   const [isSwapping, setIsSwapping] = useState(false);
   const [schedule, setSchedule] = useState(null);
-  const [time, setTime] = useState(0);
 
   useEffect(() => {
     if (window.ethereum) {
@@ -55,30 +54,19 @@ export default function Home() {
     setIsSwapping(false);
   };
 
-  const scheduleSwap = (interval) => {
+  const scheduleAutoPriceMovement = () => {
     if (schedule) clearInterval(schedule);
     let t = 0;
     const newSchedule = setInterval(() => {
-      const amount = (Math.sin(t) + 1) * 0.5 + 0.1; // Dao động lượng swap từ 0.1 - 1.1
+      let amount = Math.abs(Math.sin(t) * Math.cos(t) * 3) + 0.1; // Dao động lượng swap nhưng tối đa 3 MON
+      amount = Math.min(amount, 3); // Giới hạn tối đa 3 MON
       const increasePrice = Math.sin(t) > 0; // Tăng hoặc giảm theo chu kỳ
       swapToken(amount, increasePrice);
-      t += Math.PI / 6; // Mỗi lần swap, tăng góc để tạo sóng mượt hơn
-    }, interval * 1000);
+      t += Math.PI / 30; // Cập nhật mỗi giây
+    }, 1000);
     setSchedule(newSchedule);
-    alert(`Đã lên lịch đẩy giá theo mô hình sóng mỗi ${interval} giây!`);
-  };
-
-  const scheduleAdvancedSwap = (interval) => {
-    if (schedule) clearInterval(schedule);
-    let t = 0;
-    const newSchedule = setInterval(() => {
-      const amount = Math.abs(Math.sin(t) * Math.cos(t) * 1.5) + 0.1; // Biến đổi sóng phức tạp hơn
-      const increasePrice = Math.sin(t) > 0; // Tăng hoặc giảm theo chu kỳ
-      swapToken(amount, increasePrice);
-      t += Math.PI / 8; // Chu kỳ biến đổi khác nhau
-    }, interval * 1000);
-    setSchedule(newSchedule);
-    alert(`Đã lên lịch đẩy giá theo mô hình nâng cao mỗi ${interval} giây!`);
+    alert("Đã kích hoạt tự động đẩy giá mỗi giây trong 1 tuần!");
+    setTimeout(() => clearInterval(newSchedule), 7 * 24 * 60 * 60 * 1000); // Dừng sau 1 tuần
   };
 
   return (
@@ -92,11 +80,8 @@ export default function Home() {
         </button>
       )}
       <div className="flex gap-4 mt-4">
-        <button onClick={() => scheduleSwap(60)} className="bg-green-700 text-white px-4 py-2 rounded">
-          ⏳ Lên lịch đẩy giá đẹp (mỗi 60s)
-        </button>
-        <button onClick={() => scheduleAdvancedSwap(45)} className="bg-purple-700 text-white px-4 py-2 rounded">
-          🔄 Lên lịch đẩy giá nâng cao (mỗi 45s)
+        <button onClick={scheduleAutoPriceMovement} className="bg-red-700 text-white px-4 py-2 rounded">
+          🚀 Tự động đẩy giá mỗi giây (hoạt động trong 1 tuần)
         </button>
       </div>
     </div>
